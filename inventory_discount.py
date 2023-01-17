@@ -35,12 +35,9 @@ class WindowClass(QMainWindow, form_class) :
 
     # 밀키트 제조시 재고수량 감소시키기 위한 매서드
     def discount(self,k):
-
         combobox_list=[self.comboBox_4,self.comboBox_3,self.comboBox_5,self.comboBox_6,self.comboBox_7,self.comboBox_8]
-
         # 콤보박스의 갯수 불러오기
         count = combobox_list[k].currentText()
-        print(count)
 
         # 밀키트, 재료 DB 가져오기
         conn=pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
@@ -74,6 +71,10 @@ class WindowClass(QMainWindow, form_class) :
         # 변화된 재고량으로 보여주기
         self.inventory_show()
 
+    # 밀키트별 제조가능 갯수
+    def make_mealkit(self):
+        pass
+
     # 밀키트: 제조가능개수 , 재료:재고량 보여주기
     def inventory_show(self):
         # 재료 DB 가져오기
@@ -89,13 +90,12 @@ class WindowClass(QMainWindow, form_class) :
         self.current_matarial_tableWidget.setHorizontalHeaderLabels(header_list)
 
         #열 넓이 조절
-        self.current_matarial_tableWidget.setColumnWidth(0,80)
+        self.current_matarial_tableWidget.setColumnWidth(0,100)
         self.current_matarial_tableWidget.setColumnWidth(1,80)
         self.current_matarial_tableWidget.setColumnWidth(2,100)
         self.current_matarial_tableWidget.setColumnWidth(3,80)
 
         # 각 셀에 값 넣기
-
         for i in range(len(self.mealkit_name)):
             self.current_matarial_tableWidget.setItem(i,0,QTableWidgetItem(str(self.mealkit_name[i])))   # 밀키트명
         for i in range(len(self.jaelyo_db)):
