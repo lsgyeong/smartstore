@@ -145,11 +145,8 @@ class WindowClass(QMainWindow, form_class) :
         self.current_matarial_tableWidget.setRowCount(len(self.jaelyo_db))
         self.current_matarial_tableWidget.setHorizontalHeaderLabels(header_list)
 
-        #열 넓이 조절
-        self.current_matarial_tableWidget.setColumnWidth(0,100)
-        self.current_matarial_tableWidget.setColumnWidth(1,80)
-        self.current_matarial_tableWidget.setColumnWidth(2,100)
-        self.current_matarial_tableWidget.setColumnWidth(3,80)
+        # 테이블 위젯의 헤더정렬
+        self.current_matarial_tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         # 각 셀에 값 넣기
         for i in range(len(self.mealkit_name)):
