@@ -92,7 +92,7 @@ class WindowClass(QMainWindow, form_class) :
 
         # 각 셀에 값 넣기
         for i in range(len(self.jaelyo_db)):
-            self.current_matarial_tableWidget.setItem(i,2,QTableWidgetItem(str(self.jaelyo_db[i][1]))) # 재료명
+            self.current_matarial_tableWidget.setItem(i,2,QTableWidgetItem(str(self.jaelyo_db[i][1])))   # 재료명
         for i in range(len(self.jaelyo_db)):
             self.current_matarial_tableWidget.setItem(i,3, QTableWidgetItem(str(self.jaelyo_db[i][4])))  # 재고량
 
