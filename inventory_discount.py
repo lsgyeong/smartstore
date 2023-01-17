@@ -34,6 +34,8 @@ class WindowClass(QMainWindow, form_class) :
     def discount(self,k):
         mealkit_name=['떡볶이','로제떡볶이','봉골레파스타','아끼소바','김치찌개','순두부찌개']
         combobox_list=[self.comboBox_4,self.comboBox_3,self.comboBox_5,self.comboBox_6,self.comboBox_7,self.comboBox_8]
+
+        # 콤보박스의 갯수 불러오기
         count = combobox_list[k].currentText()
         print(count)
 
