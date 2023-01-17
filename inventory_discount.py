@@ -23,6 +23,9 @@ class WindowClass(QMainWindow, form_class) :
         self.kimchi_produce_btn.clicked.connect(lambda: self.mealkit_discount(4))
         self.softtofu_produce_btn.clicked.connect(lambda: self.mealkit_discount(5))
 
+        # 재고량 보여주기
+        self.inventory_show()
+
     # 재고관리에서 제조버튼을 누르면 self.discount 매서드 실행
     def mealkit_discount(self,num):
         self.discount(k=num)
@@ -62,6 +65,36 @@ class WindowClass(QMainWindow, form_class) :
             set b.inventory={inventory_list[i]} where a.recipe_code="{code_list[i]}"')
             conn.commit()
             conn.close()
+
+        # 변화된 재고량으로 보여주기
+        self.inventory_show()
+
+    # 재고량 보여주기
+    def inventory_show(self):
+        # 재료 DB 가져오기
+        conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
+        c = conn.cursor()
+        c.execute(f'SELECT * FROM `mealkit`.`jaelyo`')
+        self.jaelyo_db = c.fetchall()
+        print(self.jaelyo_db)
+
+        # table 위젯 열, 행 셋팅
+        header_list=['밀키트명','재고량(g)','재료명','재고량(g)']
+        self.current_matarial_tableWidget.setColumnCount(len(header_list))
+        self.current_matarial_tableWidget.setRowCount(len(self.jaelyo_db))
+        self.current_matarial_tableWidget.setHorizontalHeaderLabels(header_list)
+
+        #열 넓이 조절
+        self.current_matarial_tableWidget.setColumnWidth(0,80)
+        self.current_matarial_tableWidget.setColumnWidth(1,80)
+        self.current_matarial_tableWidget.setColumnWidth(2,100)
+        self.current_matarial_tableWidget.setColumnWidth(3,80)
+
+        # 각 셀에 값 넣기
+        for i in range(len(self.jaelyo_db)):
+            self.current_matarial_tableWidget.setItem(i,2,QTableWidgetItem(str(self.jaelyo_db[i][1]))) # 재료명
+        for i in range(len(self.jaelyo_db)):
+            self.current_matarial_tableWidget.setItem(i,3, QTableWidgetItem(str(self.jaelyo_db[i][4])))  # 재고량
 
 if __name__ == "__main__" :
     app = QApplication(sys.argv)      #QApplication : 프로그램을 실행시켜주는 클래스
