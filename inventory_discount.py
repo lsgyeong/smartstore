@@ -57,14 +57,12 @@ class WindowClass(QMainWindow, form_class) :
     def discount(self,k):
         mealkit_name=['떡볶이','로제떡볶이','봉골레파스타','아끼소바','김치찌개','순두부찌개']
         count=self.combo_count(k)
-        print(count)
 
         # 밀키트, 재료 DB 가져오기
         conn=pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
         c=conn.cursor()
         c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{mealkit_name[k]}"')
         self.discount_db=c.fetchall()
-        print(self.discount_db)
 
         # DB저장위해 변화된 재고량 리스트화
         inventory_list=[]
