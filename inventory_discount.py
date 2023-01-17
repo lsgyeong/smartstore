@@ -23,11 +23,15 @@ class WindowClass(QMainWindow, form_class) :
         self.kimchi_produce_btn.clicked.connect(lambda: self.mealkit_discount(4))
         self.softtofu_produce_btn.clicked.connect(lambda: self.mealkit_discount(5))
 
+        # 재고조회버튼 눌렀을 때
+        self.material_check_btn.clicked.connect(self.inventory_search)
+
         # 밀키트 이름 리스트
         self.mealkit_name=['떡볶이','로제떡볶이','봉골레파스타','아끼소바','김치찌개','순두부찌개']
 
-        # 재고량 보여주기
-        self.inventory_show()
+    # 재고조회버튼 눌렀을 때
+    def inventory_search(self):
+        self.inventory_show() # 재고량 보여주기
 
     # 재고관리에서 제조버튼을 누르면 self.discount 매서드 실행
     def mealkit_discount(self,num):
@@ -71,7 +75,7 @@ class WindowClass(QMainWindow, form_class) :
         # 변화된 재고량으로 보여주기
         self.inventory_show()
 
-    # 밀키트별 제조가능 갯수
+    # 밀키트별 제조가능 갯수 구하기
     def make_mealkit(self):
         # 밀키트, 재료 DB 가져오기
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
@@ -121,10 +125,8 @@ class WindowClass(QMainWindow, form_class) :
             temp6.append(int(f))
         result5 = min(temp6)
 
+        # 제조가능수량 리스트화
         self.make_list=[result0,result1,result2,result3,result4,result5]
-        print(self.make_list)
-
-
 
     # 밀키트: 제조가능개수 , 재료:재고량 보여주기
     def inventory_show(self):
@@ -134,7 +136,7 @@ class WindowClass(QMainWindow, form_class) :
         c.execute(f'SELECT * FROM `mealkit`.`jaelyo`')
         self.jaelyo_db = c.fetchall()
 
-        # 밀키트 제조가능수량 보여주기
+        # 밀키트 제조가능수량 리스트 가져오기
         self.make_mealkit()
 
         # table 위젯 열, 행 셋팅
