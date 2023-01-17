@@ -23,6 +23,9 @@ class WindowClass(QMainWindow, form_class) :
         self.kimchi_produce_btn.clicked.connect(lambda: self.mealkit_discount(4))
         self.softtofu_produce_btn.clicked.connect(lambda: self.mealkit_discount(5))
 
+        # 밀키트 이름 리스트
+        self.mealkit_name=['떡볶이','로제떡볶이','봉골레파스타','아끼소바','김치찌개','순두부찌개']
+
         # 재고량 보여주기
         self.inventory_show()
 
@@ -32,7 +35,7 @@ class WindowClass(QMainWindow, form_class) :
 
     # 밀키트 제조시 재고수량 감소시키기 위한 매서드
     def discount(self,k):
-        mealkit_name=['떡볶이','로제떡볶이','봉골레파스타','아끼소바','김치찌개','순두부찌개']
+
         combobox_list=[self.comboBox_4,self.comboBox_3,self.comboBox_5,self.comboBox_6,self.comboBox_7,self.comboBox_8]
 
         # 콤보박스의 갯수 불러오기
@@ -42,7 +45,7 @@ class WindowClass(QMainWindow, form_class) :
         # 밀키트, 재료 DB 가져오기
         conn=pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
         c=conn.cursor()
-        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{mealkit_name[k]}"')
+        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[k]}"')
         self.discount_db=c.fetchall()
 
         QMessageBox.information(self,'알림','제조완료')
@@ -71,17 +74,16 @@ class WindowClass(QMainWindow, form_class) :
         # 변화된 재고량으로 보여주기
         self.inventory_show()
 
-    # 재고량 보여주기
+    # 밀키트: 제조가능개수 , 재료:재고량 보여주기
     def inventory_show(self):
         # 재료 DB 가져오기
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
         c = conn.cursor()
         c.execute(f'SELECT * FROM `mealkit`.`jaelyo`')
         self.jaelyo_db = c.fetchall()
-        print(self.jaelyo_db)
 
         # table 위젯 열, 행 셋팅
-        header_list=['밀키트명','재고량(g)','재료명','재고량(g)']
+        header_list=['밀키트명','제조가능갯수','재료명','재고량(g)']
         self.current_matarial_tableWidget.setColumnCount(len(header_list))
         self.current_matarial_tableWidget.setRowCount(len(self.jaelyo_db))
         self.current_matarial_tableWidget.setHorizontalHeaderLabels(header_list)
@@ -93,6 +95,9 @@ class WindowClass(QMainWindow, form_class) :
         self.current_matarial_tableWidget.setColumnWidth(3,80)
 
         # 각 셀에 값 넣기
+
+        for i in range(len(self.mealkit_name)):
+            self.current_matarial_tableWidget.setItem(i,0,QTableWidgetItem(str(self.mealkit_name[i])))   # 밀키트명
         for i in range(len(self.jaelyo_db)):
             self.current_matarial_tableWidget.setItem(i,2,QTableWidgetItem(str(self.jaelyo_db[i][1])))   # 재료명
         for i in range(len(self.jaelyo_db)):
