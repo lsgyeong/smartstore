@@ -73,7 +73,58 @@ class WindowClass(QMainWindow, form_class) :
 
     # 밀키트별 제조가능 갯수
     def make_mealkit(self):
-        pass
+        # 밀키트, 재료 DB 가져오기
+        conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
+        c = conn.cursor()
+        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[0]}"')
+        self.make_db0 = c.fetchall()
+        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[1]}"')
+        self.make_db1 = c.fetchall()
+        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[2]}"')
+        self.make_db2 = c.fetchall()
+        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[3]}"')
+        self.make_db3 = c.fetchall()
+        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[4]}"')
+        self.make_db4 = c.fetchall()
+        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[5]}"')
+        self.make_db5 = c.fetchall()
+
+        # 각 음식별 제조가능수량 구하기
+        temp1=[] # 떡볶이
+        temp2=[] # 로제떡볶이
+        temp3=[] # 봉골레파스타
+        temp4=[] # 아끼소바
+        temp5=[] # 김치찌개
+        temp6=[] # 순두부찌개
+        for i in range(len(self.make_db0)):
+            a=self.make_db0[i][12]/int(self.make_db0[i][6])
+            temp1.append(int(a))
+        result0 = min(temp1)
+        for i in range(len(self.make_db1)):
+            b = self.make_db1[i][12] / int(self.make_db1[i][6])
+            temp2.append(int(b))
+        result1 = min(temp2)
+        for i in range(len(self.make_db2)):
+            c = self.make_db2[i][12] / int(self.make_db2[i][6])
+            temp3.append(int(c))
+        result2 = min(temp3)
+        for i in range(len(self.make_db3)):
+            d = self.make_db3[i][12] / int(self.make_db3[i][6])
+            temp4.append(int(d))
+        result3 = min(temp4)
+        for i in range(len(self.make_db4)):
+            e = self.make_db4[i][12] / int(self.make_db4[i][6])
+            temp5.append(int(e))
+        result4 = min(temp5)
+        for i in range(len(self.make_db5)):
+            f = self.make_db5[i][12] / int(self.make_db5[i][6])
+            temp6.append(int(f))
+        result5 = min(temp6)
+
+        self.make_list=[result0,result1,result2,result3,result4,result5]
+        print(self.make_list)
+
+
 
     # 밀키트: 제조가능개수 , 재료:재고량 보여주기
     def inventory_show(self):
@@ -82,6 +133,9 @@ class WindowClass(QMainWindow, form_class) :
         c = conn.cursor()
         c.execute(f'SELECT * FROM `mealkit`.`jaelyo`')
         self.jaelyo_db = c.fetchall()
+
+        # 밀키트 제조가능수량 보여주기
+        self.make_mealkit()
 
         # table 위젯 열, 행 셋팅
         header_list=['밀키트명','제조가능갯수','재료명','재고량(g)']
@@ -98,6 +152,8 @@ class WindowClass(QMainWindow, form_class) :
         # 각 셀에 값 넣기
         for i in range(len(self.mealkit_name)):
             self.current_matarial_tableWidget.setItem(i,0,QTableWidgetItem(str(self.mealkit_name[i])))   # 밀키트명
+        for i in range(len(self.make_list)):
+            self.current_matarial_tableWidget.setItem(i,1, QTableWidgetItem(str(self.make_list[i])))     # 제조가능갯수
         for i in range(len(self.jaelyo_db)):
             self.current_matarial_tableWidget.setItem(i,2,QTableWidgetItem(str(self.jaelyo_db[i][1])))   # 재료명
         for i in range(len(self.jaelyo_db)):
