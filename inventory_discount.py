@@ -45,14 +45,14 @@ class WindowClass(QMainWindow, form_class) :
         c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{mealkit_name[k]}"')
         self.discount_db=c.fetchall()
 
+        QMessageBox.information(self,'알림','제조완료')
+        # 여기서 리스트화된 재고량 보고 최소수량이하면 알림띄우기
+
         # DB저장위해 변화된 재고량 리스트화
         inventory_list=[]
         for i in range(len(self.discount_db)):
             temp=int(self.discount_db[i][12])-(int(self.discount_db[i][6])*int(count))
             inventory_list.append(temp)
-
-        QMessageBox.information(self,'알림','제조완료')
-        # 여기서 리스트화된 재고량 보고 최소수량이하면 알림띄우기
 
         # DB저장위해 recipe_code 리스트화
         code_list=[]
