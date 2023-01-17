@@ -48,6 +48,8 @@ class WindowClass(QMainWindow, form_class) :
         c=conn.cursor()
         c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[k]}"')
         self.discount_db=c.fetchall()
+        conn.commit()
+        conn.close()
 
         QMessageBox.information(self,'알림','제조완료')
         # 여기서 리스트화된 재고량 보고 최소수량이하면 알림띄우기
@@ -92,6 +94,8 @@ class WindowClass(QMainWindow, form_class) :
         self.make_db4 = c.fetchall()
         c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[5]}"')
         self.make_db5 = c.fetchall()
+        conn.commit()
+        conn.close()
 
         # 각 음식별 제조가능수량 구하기
         temp1=[] # 떡볶이
@@ -135,6 +139,8 @@ class WindowClass(QMainWindow, form_class) :
         c = conn.cursor()
         c.execute(f'SELECT * FROM `mealkit`.`jaelyo`')
         self.jaelyo_db = c.fetchall()
+        conn.commit()
+        conn.close()
 
         # 밀키트 제조가능수량 리스트 가져오기
         self.make_mealkit()
