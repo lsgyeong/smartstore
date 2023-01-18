@@ -26,13 +26,18 @@ class Inventoryzero(QThread):
             alarm_db=c.fetchall()
             conn.commit()
             conn.close()
-            # 로그인이 되어있다고 제조가능개수가 1개 이하이면으로 해야하니까 로그인이 되어있는 경우를 조건문에 넣어야함.
+            # 로그인이 되어있고 제조가능개수가 1개 이하이면-> 로그인이 되어있는 경우를 조건문에 넣어야함.
             if bool(alarm_db) == True:
+                self.message()
                 for i in range(len(alarm_db)):
                     self.parent.lack_of_material_label_2.setText(f'{alarm_db[i][0]}\n재고부족')
                     time.sleep(1)
+
             else:
                 self.parent.lack_of_material_label_2.setText(f'재고부족알림창')
+    def message(self):
+        QMessageBox.information(self.parent,'알림','재고부족')
+        self.power=False
 
 #화면을 띄우는데 사용되는 Class 선언
 class WindowClass(QMainWindow, form_class) :
