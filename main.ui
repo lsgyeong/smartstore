@@ -2100,6 +2100,36 @@ color: rgb(15, 15, 15);</string>
        </property>
       </item>
      </widget>
+     <widget class="QLabel" name="lack_of_material_label_2">
+      <property name="geometry">
+       <rect>
+        <x>830</x>
+        <y>20</y>
+        <width>251</width>
+        <height>181</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Sitka Banner</family>
+        <pointsize>20</pointsize>
+        <weight>50</weight>
+        <italic>false</italic>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(155, 215, 251);
+font: 20pt &quot;Sitka Banner&quot;;
+color: rgb(0, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
      <zorder>label_43</zorder>
      <zorder>label_39</zorder>
      <zorder>label_34</zorder>
@@ -2148,6 +2178,7 @@ color: rgb(15, 15, 15);</string>
      <zorder>comboBox_6</zorder>
      <zorder>comboBox_7</zorder>
      <zorder>comboBox_8</zorder>
+     <zorder>lack_of_material_label_2</zorder>
     </widget>
     <widget class="QWidget" name="number7">
      <widget class="QLabel" name="label_44">
