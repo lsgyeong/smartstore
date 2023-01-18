@@ -9,12 +9,14 @@ import time
 #단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
 form_class = uic.loadUiType("main.ui")[0]
 
+# 스레드 클래스
 class Inventoryzero(QThread):
     def __init__(self,parent):
         super().__init__(parent)
         self.parent = parent
         self.power=True
 
+    # 스레드 할 때 돌아가야하는 조건문
     def run(self):
         while self.power:
             # 밀키트, 재료 DB 가져오기
@@ -28,16 +30,11 @@ class Inventoryzero(QThread):
             conn.close()
             # 로그인이 되어있고 제조가능개수가 1개 이하이면-> 로그인이 되어있는 경우를 조건문에 넣어야함.
             if bool(alarm_db) == True:
-                self.message()
                 for i in range(len(alarm_db)):
                     self.parent.lack_of_material_label_2.setText(f'{alarm_db[i][0]}\n재고부족')
                     time.sleep(1)
-
             else:
                 self.parent.lack_of_material_label_2.setText(f'재고부족알림창')
-    def message(self):
-        QMessageBox.information(self.parent,'알림','재고부족')
-        self.power=False
 
 #화면을 띄우는데 사용되는 Class 선언
 class WindowClass(QMainWindow, form_class) :
@@ -45,6 +42,7 @@ class WindowClass(QMainWindow, form_class) :
         super().__init__()
         self.setupUi(self)
 
+        # 스레드 돌리기
         self.inventoryzero=Inventoryzero(self)
         self.inventoryzero.start()
 
@@ -63,6 +61,8 @@ class WindowClass(QMainWindow, form_class) :
 
         # 밀키트 이름 리스트
         self.mealkit_name=['떡볶이','로제떡볶이','봉골레파스타','아끼소바','김치찌개','순두부찌개']
+
+        self.order_discount()
 
     # 재고조회버튼 눌렀을 때
     def inventory_search(self):
@@ -90,9 +90,7 @@ class WindowClass(QMainWindow, form_class) :
         self.discount2_db=c.fetchall()
         conn.commit()
         conn.close()
-        print(self.discount_db)
-        print(self.discount2_db)
-        #
+
         if bool(self.discount2_db) == True:
             QMessageBox.information(self, '알림', '제조불가\n재료확인요망')
         else:
@@ -186,13 +184,12 @@ class WindowClass(QMainWindow, form_class) :
         self.jaelyo_db = c.fetchall()
         conn.commit()
         conn.close()
-        print(self.jaelyo_db)
 
         # 밀키트 제조가능수량 리스트 가져오기
         self.make_mealkit()
 
         # table 위젯 열, 행 셋팅
-        header_list=['밀키트명','제조가능갯수','재료명','제조가능갯수']
+        header_list=['밀키트명','제조가능갯수','재료명','재고량(g)']
         self.current_matarial_tableWidget.setColumnCount(len(header_list))
         self.current_matarial_tableWidget.setRowCount(len(self.jaelyo_db))
         self.current_matarial_tableWidget.setHorizontalHeaderLabels(header_list)
@@ -209,6 +206,16 @@ class WindowClass(QMainWindow, form_class) :
             self.current_matarial_tableWidget.setItem(i,2,QTableWidgetItem(str(self.jaelyo_db[i][1])))   # 재료명
         for i in range(len(self.jaelyo_db)):
             self.current_matarial_tableWidget.setItem(i,3, QTableWidgetItem(str(self.jaelyo_db[i][4])))  # 재고량(g)
+
+    # 주문내역 받아서 재고 감소시키는 매서드
+    def order_discount(self):
+        # DB 가져오기
+        conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
+        c = conn.cursor()
+        c.execute(f'update `mealkit`.`recipe` as a inner join jaelyo as b inner join customer_order as c \
+        set b.inventory=b.inventory-(a.recipe_gram*c.count), c.order_result="Y" where c.order_result="N"')
+        conn.commit()
+        conn.close()
 
 if __name__ == "__main__" :
     app = QApplication(sys.argv)      #QApplication : 프로그램을 실행시켜주는 클래스
