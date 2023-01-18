@@ -32,7 +32,7 @@ class Inventoryzero(QThread):
             if bool(alarm_db) == True:
                 for i in range(len(alarm_db)):
                     self.parent.lack_of_material_label_2.setText(f'{alarm_db[i][0]}\n재고부족')
-                    time.sleep(1)
+                    time.sleep(2)
             else:
                 self.parent.lack_of_material_label_2.setText(f'재고부족알림창')
 
@@ -212,10 +212,21 @@ class WindowClass(QMainWindow, form_class) :
         # DB 가져오기
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
         c = conn.cursor()
-        c.execute(f'update `mealkit`.`recipe` as a inner join jaelyo as b inner join customer_order as c \
-        set b.inventory=b.inventory-(a.recipe_gram*c.count), c.order_result="Y" where c.order_result="N"')
+        # c.execute(f'update `mealkit`.`recipe` as a inner join jaelyo as b inner join customer_order as c \
+        # set b.inventory=b.inventory-(a.recipe_gram*c.count), c.order_result="Y" where c.order_result="N"')
+
+        c.execute(f'select food, convert(sum(count),signed integer), order_result from `mealkit`.`customer_order` where order_result = "N" group by food')
+        count_db = c.fetchall()
+
+        c.execute(f'select * from (select a.MEALKIT_NAME, a.RECIPE_GRAM, b.INVENTORY from `mealkit`.`recipe` as a \
+        inner join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE)t')
+        recipe_db=c.fetchall()
         conn.commit()
         conn.close()
+
+        print(count_db)
+        print(recipe_db)
+
 
 if __name__ == "__main__" :
     app = QApplication(sys.argv)      #QApplication : 프로그램을 실행시켜주는 클래스
