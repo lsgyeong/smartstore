@@ -40,16 +40,15 @@ class WindowClass(QMainWindow, form_class) :
     def __init__(self) :
         super().__init__()
         self.setupUi(self)
-
         # 스레드 돌리기
         self.inventoryzero=Inventoryzero(self)
         self.inventoryzero.start()
         # 주문내역제조 버튼 눌렀을 떄
         self.jumun_btn.clicked.connect(self.order_discount_go)
         # 재고조회버튼 눌렀을 때
-        self.material_check_btn.clicked.connect(self.inventory_search)
+        self.material_check_btn_2.clicked.connect(self.inventory_search)
         # 재고일괄발주 눌렀을 때
-        self.material_check_btn_2.clicked.connect(self.balju)
+        self.material_check_btn_3.clicked.connect(self.balju)
         # 밀키트 재고량 보이기
         self.make_mealkit()
 
@@ -70,7 +69,7 @@ class WindowClass(QMainWindow, form_class) :
     # 재고조회버튼 눌렀을 때
     def inventory_search(self):
         self.inventory_show() # 재고량 보여주기
-        self.make_mealkit() # 밀키스 수량 보여주기
+        self.make_mealkit()   # 밀키트 수량 보여주기
 
     # 밀키트별 제조가능 갯수 구하기
     def make_mealkit(self):
@@ -83,12 +82,12 @@ class WindowClass(QMainWindow, form_class) :
         conn.commit()
         conn.close()
         # 라벨에 셋팅
-        self.kimchi_inven.setText(f'{make_list[0][1]}')
-        self.bboki_inven.setText(f'{make_list[1][1]}')
-        self.rose_inven.setText(f'{make_list[2][1]}')
-        self.pasta_inven.setText(f'{make_list[3][1]}')
-        self.sundubu_inven.setText(f'{make_list[4][1]}')
-        self.yaki_inven.setText(f'{make_list[5][1]}')
+        self.current_amount_label_kimchi.setText(f'{make_list[0][1]}개')
+        self.current_amount_label_tteokbokki1.setText(f'{make_list[1][1]}개')
+        self.current_amount_label_tteokbokki2.setText(f'{make_list[2][1]}개')
+        self.current_amount_label_pasta.setText(f'{make_list[3][1]}개')
+        self.current_amount_label_softtofu.setText(f'{make_list[4][1]}개')
+        self.current_amount_label_soba.setText(f'{make_list[5][1]}개')
 
     # 재료:재고량 보여주기
     def inventory_show(self):
@@ -130,6 +129,7 @@ class WindowClass(QMainWindow, form_class) :
             # 반복문과 매서드를 활용하여 아직 제조 안한 주문을 하나씩 처리함.
             for i in range(len(standard_db)):
                 self.order_discount()       # order_result='N'인 한 개의 주문을 가져와서 재고량 감소시키는 메서드
+        QMessageBox.information(self, '알림', f'밀키트 제조가 완료되었습니다')
         conn.commit()
         conn.close()
         self.make_mealkit()                 # 밀키트 재고량 보여주는 매서드
@@ -153,7 +153,7 @@ class WindowClass(QMainWindow, form_class) :
             if bool(alarm_db) == True and self.count_db[0][3]==alarm_db[0][0]:
                 QMessageBox.information(self, '알림', f'{self.count_db[0][3]}재고 부족, 재료 일괄 발주')
                 self.balju()
-                QMessageBox.information(self, '알림', f'발주완료, 밀키트 생산')
+                QMessageBox.information(self, '알림', f'발주완료, 밀키트 제조')
             else:
                 self.order_repeat()
         else:
