@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>5</number>
     </property>
     <widget class="QWidget" name="number1">
      <widget class="QLabel" name="label">
@@ -2130,6 +2130,24 @@ color: rgb(0, 0, 0);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
+     <widget class="QPushButton" name="material_check_btn_2">
+      <property name="geometry">
+       <rect>
+        <x>840</x>
+        <y>250</y>
+        <width>171</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgb(155, 215, 251);
+font: 15pt &quot;Sitka Banner&quot;;
+color: rgb(0, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>재고일괄발주</string>
+      </property>
+     </widget>
      <zorder>label_43</zorder>
      <zorder>label_39</zorder>
      <zorder>label_34</zorder>
@@ -2179,6 +2197,7 @@ color: rgb(0, 0, 0);</string>
      <zorder>comboBox_7</zorder>
      <zorder>comboBox_8</zorder>
      <zorder>lack_of_material_label_2</zorder>
+     <zorder>material_check_btn_2</zorder>
     </widget>
     <widget class="QWidget" name="number7">
      <widget class="QLabel" name="label_44">
@@ -2452,7 +2471,7 @@ font: 30pt &quot;Sitka Banner&quot;;</string>
      <x>0</x>
      <y>0</y>
      <width>1121</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
