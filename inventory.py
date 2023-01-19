@@ -44,30 +44,20 @@ class WindowClass(QMainWindow, form_class) :
         # 스레드 돌리기
         self.inventoryzero=Inventoryzero(self)
         self.inventoryzero.start()
+        # 주문내역제조 버튼 눌렀을 떄
+        self.jumun_btn.clicked.connect(self.order_discount_go)
+        # 재고조회버튼 눌렀을 때
+        self.material_check_btn.clicked.connect(self.inventory_search)
+        # 재고일괄발주 눌렀을 때
+        self.material_check_btn_2.clicked.connect(self.balju)
+        # 밀키트 재고량 보이기
+        self.make_mealkit()
 
         self.stackedWidget.setCurrentIndex(5)
 
-        # 떡볶이, 로제떡볶이, 봉골레파스타, 야끼소바, 김치찌개, 순두부찌개 버튼 눌렀을 때 이동
-        self.tteokbokki1_produce_btn.clicked.connect(lambda :self.mealkit_discount(0))
-        self.tteokbokki2_produce_btn.clicked.connect(lambda :self.mealkit_discount(1))
-        self.pasta_produce_btn.clicked.connect(lambda: self.mealkit_discount(2))
-        self.soba_produce_btn.clicked.connect(lambda: self.mealkit_discount(3))
-        self.kimchi_produce_btn.clicked.connect(lambda: self.mealkit_discount(4))
-        self.softtofu_produce_btn.clicked.connect(lambda: self.mealkit_discount(5))
-
-        # 재고조회버튼 눌렀을 때
-        self.material_check_btn.clicked.connect(self.inventory_search)
-
-        # 재고일괄발주 눌렀을 때
-        self.material_check_btn_2.clicked.connect(self.balju)
-
-        # 밀키트 이름 리스트
-        self.mealkit_name=['떡볶이','로제떡볶이','봉골레파스타','아끼소바','김치찌개','순두부찌개']
-
-        self.order_discout_go()
-
     # 재고일괄발주 눌렀을 때
     def balju(self):
+        # 재고량 DB 재고량 10000으로 일괄적용
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
         a = conn.cursor()
         a.execute(f'update `mealkit`.`jaelyo` set inventory=10000')
@@ -75,119 +65,32 @@ class WindowClass(QMainWindow, form_class) :
         conn.close()
         # 변화된 재고량으로 보여주기
         self.inventory_show()
+        self.make_mealkit()
 
     # 재고조회버튼 눌렀을 때
     def inventory_search(self):
         self.inventory_show() # 재고량 보여주기
-
-    # 재고관리에서 제조버튼을 누르면 self.discount 매서드 실행
-    def mealkit_discount(self,num):
-        self.discount(k=num)
-
-    # 밀키트 제조시 재고수량 감소시키기 위한 매서드
-    def discount(self,k):
-        combobox_list=[self.comboBox_4,self.comboBox_3,self.comboBox_5,self.comboBox_6,self.comboBox_7,self.comboBox_8]
-        # 콤보박스의 갯수 불러오기
-        count = combobox_list[k].currentText()
-
-        # 밀키트, 재료 DB 가져오기
-        conn=pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
-        c=conn.cursor()
-        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[k]}"')
-        self.discount_db=c.fetchall()
-
-        c.execute(f'select * from (select MEALKIT_NAME,convert(min(b.INVENTORY/a.RECIPE_GRAM), signed integer) as 최대개수 \
-        from mealkit.recipe as a inner join `mealkit`.`jaelyo` as b on a.RECIPE_CODE = b.RECIPE_CODE \
-        group by MEALKIT_NAME)t where 최대개수<={count} and MEALKIT_NAME="{self.discount_db[0][0]}"')
-        self.discount2_db=c.fetchall()
-        conn.commit()
-        conn.close()
-
-        if bool(self.discount2_db) == True:
-            QMessageBox.information(self, '알림', '제조불가\n재료확인요망')
-        else:
-            QMessageBox.information(self,'알림','제조완료')
-            # 여기서 리스트화된 재고량 보고 최소수량이하면 알림띄우기
-
-            # DB저장위해 변화된 재고량 리스트화
-            inventory_list=[]
-            for i in range(len(self.discount_db)):
-                temp=int(self.discount_db[i][12])-(int(self.discount_db[i][6])*int(count))
-                inventory_list.append(temp)
-
-            # DB저장위해 recipe_code 리스트화
-            code_list=[]
-            for i in range(len(self.discount_db)):
-                code_list.append(self.discount_db[i][5])
-
-            # 변화된 재고량 DB에 저장하기
-            for i in range(len(self.discount_db)):
-                conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
-                a=conn.cursor()
-                a.execute(f'update mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE \
-                set b.inventory={inventory_list[i]} where a.recipe_code="{code_list[i]}"')
-                conn.commit()
-                conn.close()
-
-            # 변화된 재고량으로 보여주기
-            self.inventory_show()
+        self.make_mealkit() # 밀키스 수량 보여주기
 
     # 밀키트별 제조가능 갯수 구하기
     def make_mealkit(self):
-        # 밀키트, 재료 DB 가져오기
+        # 밀키트, 재료 DB로 밀키트별 제조가능갯수 가져오기
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
         c = conn.cursor()
-        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[0]}"')
-        self.make_db0 = c.fetchall()
-        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[1]}"')
-        self.make_db1 = c.fetchall()
-        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[2]}"')
-        self.make_db2 = c.fetchall()
-        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[3]}"')
-        self.make_db3 = c.fetchall()
-        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[4]}"')
-        self.make_db4 = c.fetchall()
-        c.execute(f'SELECT * FROM mealkit.recipe as a left join `mealkit`.`jaelyo` as b on a.RECIPE_CODE=b.RECIPE_CODE where a.MEALKIT_NAME="{self.mealkit_name[5]}"')
-        self.make_db5 = c.fetchall()
+        c.execute(f'select a.MEALKIT_NAME,convert(min(b.INVENTORY/a.RECIPE_GRAM), signed integer) as 최소갯수 from recipe as a inner join jaelyo as b \
+        on a.RECIPE_code=b.RECIPE_CODE group by mealkit_name order by a.mealkit_name')
+        make_list = c.fetchall()
         conn.commit()
         conn.close()
+        # 라벨에 셋팅
+        self.kimchi_inven.setText(f'{make_list[0][1]}')
+        self.bboki_inven.setText(f'{make_list[1][1]}')
+        self.rose_inven.setText(f'{make_list[2][1]}')
+        self.pasta_inven.setText(f'{make_list[3][1]}')
+        self.sundubu_inven.setText(f'{make_list[4][1]}')
+        self.yaki_inven.setText(f'{make_list[5][1]}')
 
-        # 각 음식별 제조가능수량 구하기
-        temp1=[] # 떡볶이
-        temp2=[] # 로제떡볶이
-        temp3=[] # 봉골레파스타
-        temp4=[] # 아끼소바
-        temp5=[] # 김치찌개
-        temp6=[] # 순두부찌개
-        for i in range(len(self.make_db0)):
-            a=self.make_db0[i][12]/int(self.make_db0[i][6])
-            temp1.append(int(a))
-        result0 = min(temp1)
-        for i in range(len(self.make_db1)):
-            b = self.make_db1[i][12] / int(self.make_db1[i][6])
-            temp2.append(int(b))
-        result1 = min(temp2)
-        for i in range(len(self.make_db2)):
-            c = self.make_db2[i][12] / int(self.make_db2[i][6])
-            temp3.append(int(c))
-        result2 = min(temp3)
-        for i in range(len(self.make_db3)):
-            d = self.make_db3[i][12] / int(self.make_db3[i][6])
-            temp4.append(int(d))
-        result3 = min(temp4)
-        for i in range(len(self.make_db4)):
-            e = self.make_db4[i][12] / int(self.make_db4[i][6])
-            temp5.append(int(e))
-        result4 = min(temp5)
-        for i in range(len(self.make_db5)):
-            f = self.make_db5[i][12] / int(self.make_db5[i][6])
-            temp6.append(int(f))
-        result5 = min(temp6)
-
-        # 제조가능수량 리스트화
-        self.make_list=[result0,result1,result2,result3,result4,result5]
-
-    # 밀키트: 제조가능개수 , 재료:재고량 보여주기
+    # 재료:재고량 보여주기
     def inventory_show(self):
         # DB 가져오기
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
@@ -197,11 +100,8 @@ class WindowClass(QMainWindow, form_class) :
         conn.commit()
         conn.close()
 
-        # 밀키트 제조가능수량 리스트 가져오기
-        self.make_mealkit()
-
         # table 위젯 열, 행 셋팅
-        header_list=['밀키트명','제조가능갯수','재료명','재고량(g)']
+        header_list=['재료명','재고량(g)']
         self.current_matarial_tableWidget.setColumnCount(len(header_list))
         self.current_matarial_tableWidget.setRowCount(len(self.jaelyo_db))
         self.current_matarial_tableWidget.setHorizontalHeaderLabels(header_list)
@@ -210,41 +110,39 @@ class WindowClass(QMainWindow, form_class) :
         self.current_matarial_tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         # 각 셀에 값 넣기
-        for i in range(len(self.mealkit_name)):
-            self.current_matarial_tableWidget.setItem(i,0,QTableWidgetItem(str(self.mealkit_name[i])))   # 밀키트명
-        for i in range(len(self.make_list)):
-            self.current_matarial_tableWidget.setItem(i,1, QTableWidgetItem(str(self.make_list[i])))     # 제조가능갯수
         for i in range(len(self.jaelyo_db)):
-            self.current_matarial_tableWidget.setItem(i,2,QTableWidgetItem(str(self.jaelyo_db[i][1])))   # 재료명
+            self.current_matarial_tableWidget.setItem(i,0,QTableWidgetItem(str(self.jaelyo_db[i][1])))   # 재료명
         for i in range(len(self.jaelyo_db)):
-            self.current_matarial_tableWidget.setItem(i,3, QTableWidgetItem(str(self.jaelyo_db[i][4])))  # 재고량(g)
+            self.current_matarial_tableWidget.setItem(i,1, QTableWidgetItem(str(self.jaelyo_db[i][4])))  # 재고량(g)
 
-    # order_result='N'인 주문을 전체 가져와서 order_discount 매서드를 활용해서 전체 바꿔주기
-    def order_discout_go(self):
+    # 제조 안한 주문을 전체 가져와서 order_discount 매서드를 활용해서 전체 바꿔주기
+    def order_discount_go(self):
         # order_result='N'인 항목 전체 가져오기
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
         c = conn.cursor()
         c.execute(f'SELECT * FROM mealkit.customer_order where order_result="N"')
         standard_db=c.fetchall()
-
-        # 반복문을 활용하여 order_result='N'인 항목 전체 바꿔주기
-        for i in range(len(standard_db)):
-            if bool(standard_db) == True:
-                self.order_discount()
-            else:
-                QMessageBox.information(self,'알림','주문이 없습니다')
+        # 제조할 주문이 없을 경우
+        if bool(standard_db) == False:
+            QMessageBox.information(self, '알림', '주문이 없습니다')
+        # 제조할 주문이 있는 경우
+        else:
+            # 반복문과 매서드를 활용하여 아직 제조 안한 주문을 하나씩 처리함.
+            for i in range(len(standard_db)):
+                self.order_discount()       # order_result='N'인 한 개의 주문을 가져와서 재고량 감소시키는 메서드
         conn.commit()
         conn.close()
+        self.make_mealkit()                 # 밀키트 재고량 보여주는 매서드
 
     # order_result='N'인 한 개의 주문을 가져와서 재고량 감소시키는 메서드
     def order_discount(self):
         # order_result='N'인 한개의 주문 가져옴
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
         c = conn.cursor()
-
         c.execute(f'SELECT * FROM mealkit.customer_order where order_result="N" limit 1')
         self.count_db = c.fetchall()
 
+        # 주문한 만큼의 재고가 충분히 있는지 확인을 위한 쿼리문
         c.execute(f'select * from (select MEALKIT_NAME,convert(min(b.INVENTORY/a.RECIPE_GRAM), signed integer) as 최대개수 \
         from mealkit.recipe as a inner join `mealkit`.`jaelyo` as b on a.RECIPE_CODE = b.RECIPE_CODE \
         group by MEALKIT_NAME)t where MEALKIT_NAME="{self.count_db[0][3]}" and 최대개수<{self.count_db[0][4]}')
@@ -254,9 +152,7 @@ class WindowClass(QMainWindow, form_class) :
         if bool(alarm_db) == True:
             if bool(alarm_db) == True and self.count_db[0][3]==alarm_db[0][0]:
                 QMessageBox.information(self, '알림', f'{self.count_db[0][3]}재고 부족, 재료 일괄 발주')
-                conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
-                a = conn.cursor()
-                a.execute(f'update `mealkit`.`jaelyo` set inventory=10000')
+                self.balju()
                 QMessageBox.information(self, '알림', f'발주완료, 밀키트 생산')
             else:
                 self.order_repeat()
@@ -270,7 +166,7 @@ class WindowClass(QMainWindow, form_class) :
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
         c = conn.cursor()
 
-        # 가져온 주문의 재고량과 1번 제조시 들어가는 재료양 가져오기
+        # 가져온 주문의 재고량과 1번 제조시 들어가는 재료량 가져오기
         c.execute(f'SELECT a.MEALKIT_NAME,b.RECIPE_NAME,a.recipe_gram,b.inventory FROM recipe as a \
                                     inner join mealkit.jaelyo as b on a.RECIPE_CODE=b.RECIPE_CODE where a.mealkit_name="{self.count_db[0][3]}"')
         inventory_db = c.fetchall()
@@ -283,18 +179,11 @@ class WindowClass(QMainWindow, form_class) :
         QMessageBox.information(self, '알림', f'{self.count_db[0][0]}번, {self.count_db[0][3]}주문이 정상적으로 처리되었습니다')
         conn.commit()
         conn.close()
+        self.make_mealkit()
+        self.inventory_show()
 
 if __name__ == "__main__" :
     app = QApplication(sys.argv)      #QApplication : 프로그램을 실행시켜주는 클래스
     myWindow = WindowClass()          #WindowClass의 인스턴스 생성
     myWindow.show()                   #프로그램 화면을 보여주는 코드
     app.exec_()                       #프로그램을 이벤트루프로 진입시키는(프로그램을 작동시키는) 코드
-
-# DB 가져오기
-# conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='mealkit')
-# c = conn.cursor()
-# c.execute(f'update customer_order as a inner join`mealkit`.`recipe` as b \
-# on a.food=b.MEALKIT_NAME inner join jaelyo as c on b.RECIPE_CODE=c.RECIPE_CODE \
-# set c.inventory=c.inventory-(b.recipe_gram*a.count)')
-# conn.commit()
-# conn.close()
